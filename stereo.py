@@ -13,8 +13,10 @@ doffs=342.523               # x-difference of principal points, following https:
 texture_threshold = 2000      # 10 by default
 
 
-imgL = cv2.imread('images/im0_left.png', 0)
-imgR = cv2.imread('images/im0_right.png', 0)
+imgL = cv2.imread('images/im0_left.png', cv2.IMREAD_GRAYSCALE)
+imgR = cv2.imread('images/im0_right.png', cv2.IMREAD_GRAYSCALE)
+plt.imshow(imgL)
+plt.show()
 
 
 sbm = cv2.StereoBM_create(numDisparities=disparities,blockSize=block)
