@@ -16,7 +16,7 @@ sbmParams = {
     'SWS': 5,  #SADWindowSize
     'PFS': 5,  #PreFilterSize
     'PFC': 29,  #PreFiltCap
-    'MDS': -25,  #MinDisparity
+    'MDS': 50,  #MinDisparity
     'NOD': 128,  #NumDisparities
     'TTH': 100,  #TxtrThrshld
     'UR': 10,  #UniquenessRatio
