@@ -2,8 +2,8 @@
 
 clone the repository and install the dependencies using
 
-```pip install -r requirements.txt
-
+```
+pip install -r requirements.txt
 ```
 
 Populate the images/ directory with any image data you want to use.
