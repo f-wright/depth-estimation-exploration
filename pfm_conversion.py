@@ -43,7 +43,7 @@ def read_pfm(pfm_file_path):
 
 
 if __name__ == "__main__":
-    basename = 'Backpack-perfect'
+    basename = 'Classroom1-perfect'
 
     path = 'images/' + basename + '/disp0.pfm'
     img = read_pfm(path)

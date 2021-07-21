@@ -26,6 +26,8 @@ UR = 10  #UniquenessRatio
 SR = 15  #SpklRng
 SPWS = 100  #SpklWinSize
 
+loading_settings = 0
+
 
 def stereo_depth_map(img_pair):
     print ('SWS='+str(SWS)+' PFS='+str(PFS)+' PFC='+str(PFC)+' MDS='+\

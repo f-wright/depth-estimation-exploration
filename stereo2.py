@@ -2,8 +2,9 @@ import numpy as np
 import cv2 as cv
 from matplotlib import pyplot as plt
 from pfm_conversion import read_pfm
+import imageio
 
-basename = 'Backpack-perfect'
+basename = 'Classroom1-perfect'
 
 imgL = cv.imread('images/' + basename + '/im0.png', 0)  # type Mat
 imgR = cv.imread('images/' + basename + '/im1.png', 0)
@@ -66,7 +67,9 @@ depth[disparity > 0] = (fx * baseline) / (doffs + disparity[disparity > 0]
 ##############################################
 ##############################################
 
-disp0 = read_pfm('images/' + basename + '/disp0.pfm')
+# disp0 = read_pfm('images/' + basename + '/disp0.pfm')
+disp0 = imageio.imread('images/' + basename + '/disp0.pfm')
+disp0 = np.asarray(disp0)
 depth0 = np.zeros(shape=disp0.shape).astype(float)  # initialize np
 depth0[disp0 > 0] = (fx * baseline) / (doffs + disp0[disp0 > 0])  # populate np
 
@@ -74,8 +77,10 @@ fig, axs = plt.subplots(2, 3)
 fig.suptitle(str(sbmParams))
 
 axs[0, 0].imshow(imgL, 'gray')
+axs[0, 0].axis('off')
 estDisp = axs[0, 1].imshow(disparity, aspect='equal', cmap='viridis')
 axs[0, 1].set_title("estDisp")
+axs[0, 1].axis('off')
 estDepth = axs[0, 2].imshow(depth, aspect='equal', cmap='plasma')
 axs[0, 2].set_title("estDepth")
 fig.colorbar(estDisp, ax=axs[0, 1])

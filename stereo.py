@@ -26,8 +26,8 @@ block=23
 # imgR = cv2.imread('images/im0_right.png', cv2.IMREAD_GRAYSCALE)
 
 # Classroom images
-imgL = cv2.imread('images/Classroom1-imperfect/im0.png', cv2.IMREAD_GRAYSCALE)
-imgR = cv2.imread('images/Classroom1-imperfect/im1.png', cv2.IMREAD_GRAYSCALE)
+imgL = cv2.imread('images/Classroom1-perfect/im0.png', cv2.IMREAD_GRAYSCALE)
+imgR = cv2.imread('images/Classroom1-perfect/im1.png', cv2.IMREAD_GRAYSCALE)
 
 plt.imshow(imgL, cmap="gray")
 plt.axis('off')
@@ -53,7 +53,7 @@ plt.show()
 
 
 # convert from pfm file equation?
-pfm = imageio.imread('images/Classroom1-imperfect/disp0.pfm')
+pfm = imageio.imread('images/Classroom1-perfect/disp0.pfm')
 pfm = np.asarray(pfm)
 plt.imshow(pfm)
 plt.show()
