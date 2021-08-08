@@ -20,6 +20,7 @@ pip install -r requirements.txt
   - calib.txt, containing at least fx, baseline, and doffs (see Middlebury dataset for example of format)
   - disp0.pfm, containing ground truth
   - img0.png and img1.png, the left and right stereo images respectively.
+  - ![example setup of directory](example_setup.png)
 
 - run the code, e.g.
 
