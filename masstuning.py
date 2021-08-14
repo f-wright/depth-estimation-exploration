@@ -16,6 +16,7 @@ sbmParams = {
     'UR': 2,  #UniquenessRatio
     'SR': 15,  #SpklRng
     'SPWS': 30,  #SpklWinSize
+    'BS': 15,  #BlockSize
 }
 
 
@@ -36,6 +37,7 @@ def get_est_disp(basename):
     sbm.setUniquenessRatio(sbmParams['UR'])
     sbm.setSpeckleRange(sbmParams['SR'])
     sbm.setSpeckleWindowSize(sbmParams['SPWS'])
+    sbm.setBlockSize(sbmParams['BS'])
 
     disparity = sbm.compute(imgL, imgR) / 16
     return disparity
@@ -116,16 +118,23 @@ def draw_comparison_window():
                      facecolor=axcolor)  #stepX stepY width height
     SPWSaxe = plt.axes([0.15, 0.33, 0.7, 0.025],
                        facecolor=axcolor)  #stepX stepY width height
+    BSaxe = plt.axes([0.15, 0.37, 0.7, 0.025],
+                     facecolor=axcolor)  #stepX stepY width height
 
-    sSWS = Slider(SWSaxe, 'SWS', 5.0, 255.0, valinit=5)
-    sPFS = Slider(PFSaxe, 'PFS', 5.0, 255.0, valinit=5)
-    sPFC = Slider(PFCaxe, 'PreFiltCap', 5.0, 63.0, valinit=29)
-    sMDS = Slider(MDSaxe, 'MinDISP', -100.0, 100.0, valinit=-25)
-    sNOD = Slider(NODaxe, 'NumOfDisp', 16.0, 256.0, valinit=128)
-    sTTH = Slider(TTHaxe, 'TxtrThrshld', 0.0, 1000.0, valinit=100)
-    sUR = Slider(URaxe, 'UnicRatio', 1.0, 20.0, valinit=10)
-    sSR = Slider(SRaxe, 'SpcklRng', 0.0, 40.0, valinit=15)
-    sSPWS = Slider(SPWSaxe, 'SpklWinSze', 0.0, 300.0, valinit=100)
+    sSWS = Slider(SWSaxe, 'SWS', 5.0, 255.0, valinit=sbmParams['SWS'])
+    sPFS = Slider(PFSaxe, 'PFS', 5.0, 255.0, valinit=sbmParams['PFS'])
+    sPFC = Slider(PFCaxe, 'PreFiltCap', 5.0, 63.0, valinit=sbmParams['PFC'])
+    sMDS = Slider(MDSaxe, 'MinDISP', -100.0, 100.0, valinit=sbmParams['MDS'])
+    sNOD = Slider(NODaxe, 'NumOfDisp', 16.0, 320.0, valinit=sbmParams['NOD'])
+    sTTH = Slider(TTHaxe, 'TxtrThrshld', 0.0, 1000.0, valinit=sbmParams['TTH'])
+    sUR = Slider(URaxe, 'UnicRatio', 1.0, 20.0, valinit=sbmParams['UR'])
+    sSR = Slider(SRaxe, 'SpcklRng', 0.0, 40.0, valinit=sbmParams['SR'])
+    sSPWS = Slider(SPWSaxe,
+                   'SpklWinSze',
+                   0.0,
+                   300.0,
+                   valinit=sbmParams['SPWS'])
+    sBS = Slider(BSaxe, 'BlockSize', 0.0, 40.0, valinit=sbmParams['BS'])
 
     def update_est_disparities():
         for i in range(numImgs):
@@ -148,6 +157,7 @@ def draw_comparison_window():
         sbmParams['UR'] = int(sUR.val)
         sbmParams['SR'] = int(sSR.val)
         sbmParams['SPWS'] = int(sSPWS.val)
+        sbmParams['BS'] = int(sBS.val)
 
         print('Rebuilding depth map')
 
@@ -165,6 +175,7 @@ def draw_comparison_window():
     sUR.on_changed(update)
     sSR.on_changed(update)
     sSPWS.on_changed(update)
+    sBS.on_changed(update)
 
     plt.show()
 
