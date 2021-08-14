@@ -4,7 +4,7 @@ from matplotlib import pyplot as plt
 from pfm_conversion import read_pfm
 import imageio
 
-basename = 'Classroom1-perfect'
+basename = 'Bicycle1-perfect'
 
 imgL = cv.imread('images/' + basename + '/im0.png', 0)  # type Mat
 imgR = cv.imread('images/' + basename + '/im1.png', 0)
@@ -17,12 +17,12 @@ sbmParams = {
     'SWS': 5,  #SADWindowSize
     'PFS': 5,  #PreFilterSize
     'PFC': 29,  #PreFiltCap
-    'MDS': 50,  #MinDisparity
-    'NOD': 128,  #NumDisparities
+    'MDS': 0,  #MinDisparity
+    'NOD': 240,  #NumDisparities
     'TTH': 100,  #TxtrThrshld
-    'UR': 10,  #UniquenessRatio
+    'UR': 2,  #UniquenessRatio
     'SR': 15,  #SpklRng
-    'SPWS': 100,  #SpklWinSize
+    'SPWS': 30,  #SpklWinSize
 }
 
 sbm = cv.StereoBM_create(numDisparities=16, blockSize=15)
@@ -57,7 +57,7 @@ print('doffs: ', doffs)
 ##############################################
 ##############################################
 
-disparity = sbm.compute(imgL, imgR)
+disparity = sbm.compute(imgL, imgR) / 16
 
 depth = np.zeros(shape=imgL.shape).astype(float)  # initialize np
 depth[disparity > 0] = (fx * baseline) / (doffs + disparity[disparity > 0]
@@ -67,8 +67,8 @@ depth[disparity > 0] = (fx * baseline) / (doffs + disparity[disparity > 0]
 ##############################################
 ##############################################
 
-# disp0 = read_pfm('images/' + basename + '/disp0.pfm')
-disp0 = imageio.imread('images/' + basename + '/disp0.pfm')
+disp0 = read_pfm('images/' + basename + '/disp0.pfm')
+# disp0 = imageio.imread('images/' + basename + '/disp0.pfm')
 disp0 = np.asarray(disp0)
 depth0 = np.zeros(shape=disp0.shape).astype(float)  # initialize np
 depth0[disp0 > 0] = (fx * baseline) / (doffs + disp0[disp0 > 0])  # populate np
