@@ -2,10 +2,10 @@ import numpy as np
 import cv2 as cv
 import os
 from matplotlib import pyplot as plt
+from matplotlib import colors
 from matplotlib.widgets import Slider, Button
 from pfm_conversion import read_pfm
 
-basename = 'Bicycle1-perfect'
 sbmParams = {
     'SWS': 5,  #SADWindowSize
     'PFS': 5,  #PreFilterSize
@@ -77,11 +77,12 @@ def draw_comparison_window():
     numImgs = len(img_list)
     print(str(numImgs) + " images")
     fig, axs = plt.subplots(3, numImgs)
-    plt.subplots_adjust(bottom=0.4)
+    plt.subplots_adjust(bottom=0.4, right=0.9)
 
     # iterate & draw all images, estd disparities, and true disparities
 
     axes = []
+    images = []
     for i in range(numImgs):
         basename = img_list[i][0]
         img = img_list[i][1]
@@ -90,16 +91,43 @@ def draw_comparison_window():
 
         print("displaying " + basename)
 
-        ax0 = axs[0, i].imshow(img, 'gray')
-        ax1 = axs[1, i].imshow(trueDisp, aspect='equal', cmap='viridis')
-        ax2 = axs[2, i].imshow(estDisp, aspect='equal', cmap='viridis')
-        axs[0, i].axis('off')
-        axs[1, i].axis('off')
-        axs[2, i].axis('off')
+        ax0 = axs[0, i]
+        ax1 = axs[1, i]
+        ax2 = axs[2, i]
+        ax0.imshow(img, 'gray')
+        images.append(ax1.imshow(trueDisp, aspect='equal', cmap='viridis'))
+        images.append(ax2.imshow(estDisp, aspect='equal', cmap='viridis'))
+        ax0.axis('off')
+        ax1.axis('off')
+        ax2.axis('off')
 
         axes.append([ax0, ax1, ax2])
 
-    # draw axes
+    # add row labels
+    axs[1, 0].axis('on')
+    axs[2, 0].axis('on')
+    axs[1, 0].set_ylabel('true disp')
+    axs[2, 0].set_ylabel('est disp')
+    axs[1, 0].set_yticklabels([])
+    axs[1, 0].set_xticklabels([])
+    axs[1, 0].set_xticks([])
+    axs[1, 0].set_yticks([])
+    axs[2, 0].set_yticklabels([])
+    axs[2, 0].set_xticklabels([])
+    axs[2, 0].set_xticks([])
+    axs[2, 0].set_yticks([])
+
+    # draw colorbar
+    cax = plt.axes([0.9, 0.4, 0.01, 0.5])
+    vmin = min(image.get_array().min() for image in images)
+    vmax = max(image.get_array().max() for image in images)
+    norm = colors.Normalize(vmin=vmin, vmax=vmax)
+    for im in images:
+        im.set_norm(norm)
+
+    fig.colorbar(images[0], cax=cax, orientation='vertical')
+
+    # draw tuning axes
     SWSaxe = plt.axes([0.15, 0.01, 0.7, 0.025],
                       facecolor=axcolor)  #stepX stepY width height
     PFSaxe = plt.axes([0.15, 0.05, 0.7, 0.025],
