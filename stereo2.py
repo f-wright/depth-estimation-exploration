@@ -4,7 +4,7 @@ from matplotlib import pyplot as plt
 from pfm_conversion import read_pfm
 import imageio
 
-basename = 'Bicycle1-perfect'
+basename = 'Bicycle1-imperfect'
 
 imgL = cv.imread('images/' + basename + '/im0.png', 0)  # type Mat
 imgR = cv.imread('images/' + basename + '/im1.png', 0)
@@ -57,42 +57,43 @@ print('doffs: ', doffs)
 ##############################################
 ##############################################
 
-disparity = sbm.compute(imgL, imgR) / 16
+estDisp = sbm.compute(imgL, imgR) / 16
 
-depth = np.zeros(shape=imgL.shape).astype(float)  # initialize np
-depth[disparity > 0] = (fx * baseline) / (doffs + disparity[disparity > 0]
-                                          )  # populate np
+estDepth = np.zeros(shape=imgL.shape).astype(float)  # initialize np
+estDepth[estDisp > 0] = (fx * baseline) / (doffs + estDisp[estDisp > 0]
+                                           )  # populate np
 # print(depth)
 
 ##############################################
 ##############################################
 
-disp0 = read_pfm('images/' + basename + '/disp0.pfm')
+trueDisp = read_pfm('images/' + basename + '/disp0.pfm')
 # disp0 = imageio.imread('images/' + basename + '/disp0.pfm')
-disp0 = np.asarray(disp0)
-depth0 = np.zeros(shape=disp0.shape).astype(float)  # initialize np
-depth0[disp0 > 0] = (fx * baseline) / (doffs + disp0[disp0 > 0])  # populate np
+trueDisp = np.asarray(trueDisp)
+trueDepth = np.zeros(shape=trueDisp.shape).astype(float)  # initialize np
+trueDepth[trueDisp > 0] = (fx * baseline) / (doffs + trueDisp[trueDisp > 0]
+                                             )  # populate np
 
 fig, axs = plt.subplots(2, 3)
 fig.suptitle(str(sbmParams))
 
 axs[0, 0].imshow(imgL, 'gray')
 axs[0, 0].axis('off')
-estDisp = axs[0, 1].imshow(disparity, aspect='equal', cmap='viridis')
+estDispAx = axs[0, 1].imshow(estDisp, aspect='equal', cmap='viridis')
 axs[0, 1].set_title("estDisp")
 axs[0, 1].axis('off')
-estDepth = axs[0, 2].imshow(depth, aspect='equal', cmap='plasma')
+estDepthAx = axs[0, 2].imshow(estDepth, aspect='equal', cmap='plasma')
 axs[0, 2].set_title("estDepth")
-fig.colorbar(estDisp, ax=axs[0, 1])
-fig.colorbar(estDepth, ax=axs[0, 2])
+fig.colorbar(estDispAx, ax=axs[0, 1])
+fig.colorbar(estDepthAx, ax=axs[0, 2])
 
 axs[1, 0].imshow(imgL, 'gray')
-trueDisp = axs[1, 1].imshow(disp0, aspect='equal', cmap='viridis')
+trueDispAx = axs[1, 1].imshow(trueDisp, aspect='equal', cmap='viridis')
 axs[1, 1].set_title("trueDisp")
-trueDepth = axs[1, 2].imshow(depth0, aspect='equal', cmap='plasma')
+trueDepthAx = axs[1, 2].imshow(trueDepth, aspect='equal', cmap='plasma')
 axs[1, 2].set_title("trueDepth")
-fig.colorbar(trueDisp, ax=axs[1, 1])
-fig.colorbar(trueDepth, ax=axs[1, 2])
+fig.colorbar(trueDispAx, ax=axs[1, 1])
+fig.colorbar(trueDepthAx, ax=axs[1, 2])
 
 plt.show()
 
