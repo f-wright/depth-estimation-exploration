@@ -3,13 +3,13 @@ from algorithm_template import RangeEstimator
 import numpy as np
 import cv2 as cv
 from matplotlib import pyplot as plt
+from matplotlib import colors
 import re
 
 
 class StereoBM(RangeEstimator):
     def __init__(self):
-        """ Calibrate the algorithm. 
-        """
+        """ Initialize and calibrate the algorithm."""
 
         self.isStereo = True
 
@@ -51,42 +51,99 @@ class StereoBM(RangeEstimator):
 
         return imgL, imgR
 
-    def computeDisp(self, basename):
-        """ Return calculated disparity in an nparray
-        """
-        imgL, imgR = self.getImage(basename)
-        estDisp = self.Algorithm.compute(imgL, imgR) / 16
-        return estDisp
+    def estimateRange(self, basename):
+        """ Return estimated distance in an nparray"""
+        estDisp = self.estimateDisp(basename)
+        estRange = self.dispToRange(basename, estDisp)
 
-    def computeDist(self, basename):
-        """ Return calculated distance in an nparray
-        """
-        fx, baseline, doffs = self.getCalibData(basename)
-        estDisp = self.computeDisp(basename)
-        estDepth = np.zeros(shape=estDisp.shape).astype(float)  # initialize np
-        estDepth[estDisp > 0] = (fx * baseline) / (doffs + estDisp[estDisp > 0]
-                                                   )  # populate np
-        return estDepth
+        return estRange
 
-    def getTrueDist(self, basename):
-        """ Return true distance in an nparray
-        """
-        fx, baseline, doffs = self.getCalibData(basename)
-        trueDisp = self.read_pfm('images/' + basename + '/disp0.pfm')
+    def getTrueRange(self, basename):
+        """ Return true distance in an nparray"""
+        trueDisp = self.read_pfm(basename)
         trueDisp = np.asarray(trueDisp)
-        trueDepth = np.zeros(shape=trueDisp.shape).astype(
-            float)  # initialize np
-        trueDepth[trueDisp > 0] = (fx * baseline) / (
-            doffs + trueDisp[trueDisp > 0])  # populate np
+        trueRange = self.dispToRange(basename, trueDisp)
 
-    def computeError(self, basename):
-        """ Return the MSE for the image
+        return trueRange
+
+    def computeDiff(self, basename):
+        """ Return the MSE for the image"""
+        estRange = self.estimateRange(basename)
+        trueRange = self.getTrueRange(basename)
+        diff = np.subtract(estRange, trueRange)
+
+        return diff
+
+    def computeMSE(self, basename):
+        diff = self.computeDiff(basename)
+        sqdiff = np.square(diff)
+        mse = np.ndarray.mean(sqdiff)
+
+        return mse
+
+    def estimateRangeMany(self, imageFolder):
+        """ Return estimated distance for all images in a folder
         """
         pass
 
-    def computeMany(self, imageFolder):
-        """ 
+    def computeErrorMany(self, imageFolder):
+        """ Return MSE for all images in a folder
         """
+        pass
+
+    def plot(self, basename):
+        """ visualize true range, estimated range, and error"""
+        imgL, imgR = self.getImage(basename)
+        estRange = self.estimateRange(basename)
+        trueRange = self.getTrueRange(basename)
+        print(estRange.dtype)
+        print(trueRange.dtype)
+        diff = np.subtract(estRange, trueRange)
+        mse = self.computeMSE(basename)
+
+        images = []
+
+        fig, axs = plt.subplots(1, 4)
+        fig.suptitle(
+            basename + "; MSE = " + str(mse) +
+            "; note: pink error is underestimated, green is overestimated")
+
+        axs[0].axis('off')
+        axs[1].axis('off')
+        axs[2].axis('off')
+        axs[3].axis('off')
+
+        axs[0].imshow(imgL, 'gray')
+
+        axs[1].set_title("estRange")
+        estRangeAx = axs[1]
+        images.append(estRangeAx.imshow(estRange, cmap='plasma'))
+
+        axs[2].set_title("trueRange")
+        trueRangeAx = axs[2]
+        images.append(trueRangeAx.imshow(trueRange, cmap='plasma'))
+
+        axs[3].set_title("error")
+        errorAx = axs[3].imshow(diff, 'PiYG')
+
+        cax1 = plt.axes([0.3, 0.7, 0.3, 0.01])
+        cax2 = plt.axes([0.9, 0.4, 0.01, 0.3])
+        vmin = min(image.get_array().min() for image in images)
+        vmax = max(image.get_array().max() for image in images)
+        norm = colors.Normalize(vmin=vmin, vmax=vmax)
+        for im in images:
+            im.set_norm(norm)
+
+        fig.colorbar(images[0], cax=cax1, orientation='horizontal')
+        fig.colorbar(errorAx, cax=cax2)
+
+        plt.show()
+
+    def plotMany(self, imageFolder):
+        """ visualize true range, estimated range, and error for all images in 
+            a folder. 
+        """
+
         pass
 
     ############################################################################
@@ -105,8 +162,21 @@ class StereoBM(RangeEstimator):
         doffs = float(calibData['doffs'])
         return fx, baseline, doffs
 
+    def estimateDisp(self, basename):
+        """ Return estimated disparity in an nparray"""
+        imgL, imgR = self.getImage(basename)
+        estDisp = self.Algorithm.compute(imgL, imgR) / 16
+        return estDisp
+
+    def dispToRange(self, basename, disp):
+        fx, baseline, doffs = self.getCalibData(basename)
+        range = np.zeros(shape=disp.shape).astype(float)  # initialize np
+        range[disp > 0] = (fx * baseline) / (doffs + disp[disp > 0]
+                                             )  # populate np
+        return range
+
     def read_pfm(self, basename):
-        pfm_file_path = 'images/' + basename + '/calib.txt'
+        pfm_file_path = 'images/' + basename + '/disp0.pfm'
         with open(pfm_file_path, 'rb') as pfm_file:
             header = pfm_file.readline().decode().rstrip()
             channels = 3 if header == 'PF' else 1
@@ -126,8 +196,8 @@ class StereoBM(RangeEstimator):
                 endian = '>'  # big endian
 
             disparity = np.fromfile(pfm_file, endian + 'f')
-        #
-        img = np.reshape(disparity, newshape=(height, width, channels))
+
+        img = np.reshape(disparity, newshape=(height, width))
         img = np.flipud(img).astype('uint8')
         #
         # plt.show(img, "disparity")
@@ -136,3 +206,10 @@ class StereoBM(RangeEstimator):
 
         # return disparity, [(height, width, channels), scale]
         return img
+
+
+# for testing purposes
+if __name__ == "__main__":
+    stereoTest = StereoBM()
+    basename = "Backpack-imperfect"
+    stereoTest.plot(basename)
